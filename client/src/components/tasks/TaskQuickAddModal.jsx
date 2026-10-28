@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, Clock, Tag, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { getTodayString, getTomorrowString } from '../../utils/dateUtils';
 import { QUICK_TASK_TEMPLATES } from '../../utils/routinePresets';
-import { IconHelper } from '../common/IconHelper';
 
 export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated, categories = [] }) => {
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [scheduledDate, setScheduledDate] = useState(getTodayString());
-  const [dateMode, setDateMode] = useState('today'); // 'today' | 'tomorrow' | 'custom'
+  const [dateMode, setDateMode] = useState('today');
   const [priority, setPriority] = useState('medium');
   const [scheduledTime, setScheduledTime] = useState('');
   const [estimatedDuration, setEstimatedDuration] = useState('');
@@ -32,7 +31,7 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated, categories =
       if (categories.length > 0 && !categoryId) {
         setCategoryId(categories[0]._id);
       }
-      setTimeout(() => inputRef.current?.focus(), 80);
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen, categories]);
 
@@ -78,19 +77,28 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated, categories =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/50 backdrop-blur-xs transition-opacity">
+      {/* Backdrop tap to close */}
+      <div className="fixed inset-0" onClick={onClose} />
+
+      {/* Mobile Bottom Sheet / Modal Dialog */}
       <div
-        className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[90vh] flex flex-col"
+        className="relative z-10 w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[85vh] flex flex-col animate-slide-up sm:animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile drag handle */}
+        <div className="sm:hidden flex justify-center pt-2.5 pb-1">
+          <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 sm:py-3 border-b border-slate-100 dark:border-slate-800/80">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">Quick Add Task</h2>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Quick Add</h2>
             <button
               type="button"
               onClick={() => setShowPresets(!showPresets)}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 px-2 py-0.5 rounded-full transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full"
             >
               <Sparkles className="w-3 h-3" />
               Presets
@@ -98,23 +106,23 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated, categories =
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Preset Picker Dropdown */}
+        {/* Quick Routine Presets Banner */}
         {showPresets && (
-          <div className="p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border-b border-indigo-100 dark:border-indigo-900/40">
-            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-2">Tap a routine preset to autofill:</p>
-            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
+          <div className="p-3 bg-indigo-50/60 dark:bg-indigo-950/30 border-b border-indigo-100 dark:border-indigo-900/40">
+            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1.5">Tap preset to fill:</p>
+            <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
               {QUICK_TASK_TEMPLATES.map((tpl, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => handleApplyPreset(tpl)}
-                  className="text-left text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-lg transition-all active:scale-95 shadow-xs"
+                  className="text-left text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-2.5 py-1 rounded-lg active:scale-95 transition-all"
                 >
                   {tpl.title}
                 </button>
@@ -123,8 +131,8 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated, categories =
           </div>
         )}
 
-        {/* Task Form */}
-        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 overflow-y-auto space-y-3.5">
           {/* Title Input */}
           <div>
             <input
@@ -132,64 +140,46 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated, categories =
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Study Java for 45 mins, Go to gym, Buy groceries..."
-              className="w-full text-base font-medium px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:bg-white dark:focus:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400"
+              placeholder="What needs to get done?"
+              className="w-full text-sm font-medium px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400"
               required
             />
           </div>
 
           {/* Date Chips */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</label>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {[
+              { id: 'today', label: 'Today' },
+              { id: 'tomorrow', label: 'Tomorrow' },
+              { id: 'custom', label: 'Pick Date' }
+            ].map((chip) => (
               <button
+                key={chip.id}
                 type="button"
-                onClick={() => handleDateModeChange('today')}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                  dateMode === 'today'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                onClick={() => handleDateModeChange(chip.id)}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                  dateMode === chip.id
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                 }`}
               >
-                Today
+                {chip.label}
               </button>
-              <button
-                type="button"
-                onClick={() => handleDateModeChange('tomorrow')}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                  dateMode === 'tomorrow'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                Tomorrow
-              </button>
-              <button
-                type="button"
-                onClick={() => setDateMode('custom')}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                  dateMode === 'custom'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                Custom Date
-              </button>
-            </div>
-            {dateMode === 'custom' && (
-              <input
-                type="date"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full mt-2 text-xs px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            )}
+            ))}
           </div>
 
-          {/* Category Selector */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-h-36 overflow-y-auto pr-1">
+          {dateMode === 'custom' && (
+            <input
+              type="date"
+              value={scheduledDate}
+              onChange={(e) => setScheduledDate(e.target.value)}
+              className="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          )}
+
+          {/* Category Chips (Horizontal Scrollable for clean thumb navigation) */}
+          <div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
               {categories.map((cat) => {
                 const isSelected = categoryId === cat._id;
                 return (
@@ -197,111 +187,106 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated, categories =
                     key={cat._id}
                     type="button"
                     onClick={() => setCategoryId(cat._id)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border text-left truncate transition-all ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border whitespace-nowrap transition-all ${
                       isSelected
-                        ? 'border-indigo-600 bg-indigo-50/80 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 shadow-xs'
-                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300'
+                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: cat.color || '#6366f1' }}
                     />
-                    <span className="truncate">{cat.name}</span>
+                    <span>{cat.name}</span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Priority Selector */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Priority</label>
-            <div className="flex items-center gap-2">
-              {[
-                { id: 'low', label: 'Low', color: 'border-slate-200 text-slate-600 dark:text-slate-400' },
-                { id: 'medium', label: 'Medium', color: 'border-amber-200 text-amber-600 dark:text-amber-400' },
-                { id: 'high', label: 'High Priority', color: 'border-rose-200 text-rose-600 dark:text-rose-400' },
-              ].map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPriority(p.id)}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                    priority === p.id
-                      ? p.id === 'high'
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-sm'
-                        : p.id === 'medium'
-                        ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
-                        : 'bg-slate-700 text-white border-slate-700 shadow-sm'
-                      : `bg-white dark:bg-slate-800 ${p.color} border-slate-200 dark:border-slate-700 hover:bg-slate-50`
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
+          {/* Priority Pills */}
+          <div className="flex items-center gap-1.5">
+            {[
+              { id: 'low', label: 'Low' },
+              { id: 'medium', label: 'Medium' },
+              { id: 'high', label: 'High Priority' }
+            ].map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPriority(p.id)}
+                className={`flex-1 py-1 text-xs font-medium rounded-lg border transition-all ${
+                  priority === p.id
+                    ? p.id === 'high'
+                      ? 'bg-rose-500 text-white border-rose-500'
+                      : p.id === 'medium'
+                      ? 'bg-amber-500 text-white border-amber-500'
+                      : 'bg-slate-700 text-white border-slate-700'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
 
-          {/* Advanced fields expander */}
+          {/* Expandable Advanced Fields */}
           <div>
             <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+              className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400"
             >
-              {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              <span>{showAdvanced ? 'Hide optional fields' : 'Add time, duration, or notes'}</span>
+              {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>{showAdvanced ? 'Fewer options' : '+ Add time, duration, or note'}</span>
             </button>
 
             {showAdvanced && (
-              <div className="mt-3 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="mt-2.5 space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Scheduled Time</label>
+                    <label className="text-[10px] text-slate-400 font-medium">Time</label>
                     <input
                       type="time"
                       value={scheduledTime}
                       onChange={(e) => setScheduledTime(e.target.value)}
-                      className="w-full mt-1 text-xs px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="w-full text-xs px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Est. Duration (mins)</label>
+                    <label className="text-[10px] text-slate-400 font-medium">Est. Mins</label>
                     <input
                       type="number"
-                      min="5"
                       step="5"
                       placeholder="e.g. 45"
                       value={estimatedDuration}
                       onChange={(e) => setEstimatedDuration(e.target.value)}
-                      className="w-full mt-1 text-xs px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="w-full text-xs px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Notes</label>
                   <textarea
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Extra details, links, or sub-points..."
-                    className="w-full mt-1 text-xs p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                    placeholder="Short note or reminder..."
+                    className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 resize-none"
                   />
                 </div>
               </div>
             )}
           </div>
 
-          {/* Submit button */}
-          <div className="pt-2">
+          {/* Submit */}
+          <div className="pt-1">
             <button
               type="submit"
               disabled={isSubmitting || !title.trim()}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.99]"
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-600/25 disabled:opacity-50 active:scale-[0.99] transition-all"
             >
-              {isSubmitting ? 'Saving task...' : 'Add Task'}
+              {isSubmitting ? 'Saving...' : 'Add Task'}
             </button>
           </div>
         </form>

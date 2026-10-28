@@ -32,11 +32,10 @@ export const AppLayout = () => {
   const handleTaskCreated = async (taskData) => {
     if (!isOnline) {
       queueAction({ type: 'CREATE_TASK', data: taskData });
-      alert('You are offline. Task has been queued and will sync when internet returns.');
+      alert('Task queued offline. Will sync automatically when reconnected.');
       return;
     }
     const res = await taskApi.createTask(taskData);
-    // Broadcast event so active views reload their task list
     window.dispatchEvent(new CustomEvent('daytrack:task-updated'));
     return res;
   };
@@ -50,24 +49,24 @@ export const AppLayout = () => {
       <div className="flex-1 flex flex-col min-w-0">
         <Header onQuickAdd={() => setIsQuickAddOpen(true)} />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 pb-mobile-nav">
+        <main className="flex-1 max-w-4xl w-full mx-auto p-3.5 sm:p-6 pb-mobile-nav">
           <Outlet context={{ categories, onOpenQuickAdd: () => setIsQuickAddOpen(true) }} />
         </main>
       </div>
 
-      {/* Floating Action Button for Mobile Quick Add */}
+      {/* Mobile Floating Action Button (FAB) */}
       <button
         onClick={() => setIsQuickAddOpen(true)}
-        className="md:hidden fixed bottom-20 right-5 z-40 w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-600/30 flex items-center justify-center transition-transform active:scale-90"
+        className="md:hidden fixed bottom-20 right-4 z-40 w-13 h-13 w-[52px] h-[52px] rounded-full bg-indigo-600 hover:bg-indigo-700 active:scale-90 text-white shadow-lg shadow-indigo-600/35 flex items-center justify-center transition-all duration-150"
         aria-label="Quick Add Task"
       >
-        <Plus className="w-7 h-7 stroke-[2.5]" />
+        <Plus className="w-6 h-6 stroke-[2.5]" />
       </button>
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
 
-      {/* Quick Add Modal */}
+      {/* Quick Add Modal / Mobile Bottom Sheet */}
       <TaskQuickAddModal
         isOpen={isQuickAddOpen}
         onClose={() => setIsQuickAddOpen(false)}

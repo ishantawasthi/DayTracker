@@ -1,8 +1,6 @@
 import React from 'react';
-import { getTodayString } from '../../utils/dateUtils';
 
 export const HabitHeatmapGrid = ({ dateCounts = {}, days = 60 }) => {
-  // Generate array of past `days` dates
   const cells = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date();
@@ -29,28 +27,27 @@ export const HabitHeatmapGrid = ({ dateCounts = {}, days = 60 }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Consistency Heatmap (Last {days} Days)
-        </h3>
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-2xs">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          Consistency Heatmap ({days}d)
+        </span>
+        <div className="flex items-center gap-1 text-[10px] text-slate-400">
           <span>Less</span>
-          <div className="w-2.5 h-2.5 rounded-sm bg-slate-100 dark:bg-slate-800" />
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-200 dark:bg-emerald-900/60" />
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-400 dark:bg-emerald-600" />
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-600 dark:bg-emerald-500" />
+          <div className="w-2 h-2 rounded-xs bg-slate-100 dark:bg-slate-800" />
+          <div className="w-2 h-2 rounded-xs bg-emerald-300 dark:bg-emerald-700" />
+          <div className="w-2 h-2 rounded-xs bg-emerald-600 dark:bg-emerald-500" />
           <span>More</span>
         </div>
       </div>
 
       {/* Grid of cells */}
-      <div className="flex flex-wrap gap-1.5 pt-1">
+      <div className="flex flex-wrap gap-1 pt-1 justify-start">
         {cells.map((cell) => (
           <div
             key={cell.dateStr}
             title={`${cell.displayDate}: ${cell.count} habits completed`}
-            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-[3px] transition-transform hover:scale-125 cursor-pointer ${getColorClass(
+            className={`w-3.5 h-3.5 rounded-[3px] transition-transform active:scale-125 cursor-pointer ${getColorClass(
               cell.count
             )}`}
           />
