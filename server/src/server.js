@@ -41,18 +41,28 @@ app.use('/api/study', studyRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
+// Resolve client dist path across various deployment environments
+const candidatePaths = [
+  path.resolve(__dirname, '../../client/dist'),
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(process.cwd(), '../client/dist'),
+  path.resolve(__dirname, '../dist')
+];
+const clientDistPath = candidatePaths.find((p) => fs.existsSync(p));
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     app: 'DayTrack API',
+    commit: process.env.RENDER_GIT_COMMIT || 'local',
+    distFound: !!clientDistPath,
     timestamp: new Date().toISOString()
   });
 });
 
 // Serve frontend client dist if present (for single-service deployment)
-const clientDistPath = path.resolve(__dirname, '../../client/dist');
-if (fs.existsSync(clientDistPath)) {
+if (clientDistPath) {
   app.use(express.static(clientDistPath));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
