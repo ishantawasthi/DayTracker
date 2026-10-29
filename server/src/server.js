@@ -65,8 +65,37 @@ app.get('/api/health', (req, res) => {
 // Serve frontend client dist if present (for single-service deployment)
 if (clientDistPath) {
   app.use(express.static(clientDistPath));
+
+  // Asset fallback: if a cached browser requests an old bundle hash, serve the current asset
+  // instead of letting it fall through to index.html (which causes SyntaxError: Unexpected token '<')
+  app.get('/assets/:file', (req, res, next) => {
+    const assetsDir = path.join(clientDistPath, 'assets');
+    if (fs.existsSync(assetsDir)) {
+      const files = fs.readdirSync(assetsDir);
+      if (req.params.file.endsWith('.js')) {
+        const mainJs = files.find((f) => f.startsWith('index-') && f.endsWith('.js'));
+        if (mainJs) {
+          res.setHeader('Content-Type', 'application/javascript');
+          return res.sendFile(path.join(assetsDir, mainJs));
+        }
+      }
+      if (req.params.file.endsWith('.css')) {
+        const mainCss = files.find((f) => f.startsWith('index-') && f.endsWith('.css'));
+        if (mainCss) {
+          res.setHeader('Content-Type', 'text/css');
+          return res.sendFile(path.join(assetsDir, mainCss));
+        }
+      }
+    }
+    res.status(404).send('Asset not found');
+  });
+
+  // Never cache index.html so clients always get the latest bundle hash immediately
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(path.join(clientDistPath, 'index.html'));
   });
 }
