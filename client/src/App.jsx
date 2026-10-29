@@ -2,19 +2,15 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
-import { DashboardPage } from './pages/DashboardPage';
 import { TasksPage } from './pages/TasksPage';
 import { HabitsPage } from './pages/HabitsPage';
-import { StudyPage } from './pages/StudyPage';
 import { ProgressPage } from './pages/ProgressPage';
-import { ReviewPage } from './pages/ReviewPage';
-import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { user, token, loading } = useAuth();
+  const { token, loading } = useAuth();
 
   if (loading) {
     return (
@@ -31,7 +27,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Public Route Guard (Redirects to dashboard if already logged in)
+// Public Route Guard (Redirects to Tasks if already logged in)
 const PublicRoute = ({ children }) => {
   const { token, loading } = useAuth();
   if (loading) return null;
@@ -60,7 +56,7 @@ export const App = () => {
         }
       />
 
-      {/* Protected App Routes */}
+      {/* Exactly 3 Core App Tabs: 1. Tasks  2. Habits  3. Progress */}
       <Route
         path="/"
         element={
@@ -69,16 +65,18 @@ export const App = () => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
-        <Route path="tasks" element={<TasksPage />} />
+        {/* Tab 1: Tasks (Default Home) */}
+        <Route index element={<TasksPage />} />
+        <Route path="tasks" element={<Navigate to="/" replace />} />
+
+        {/* Tab 2: Habits */}
         <Route path="habits" element={<HabitsPage />} />
-        <Route path="study" element={<StudyPage />} />
+
+        {/* Tab 3: Progress & History */}
         <Route path="progress" element={<ProgressPage />} />
-        <Route path="review" element={<ReviewPage />} />
-        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
-      {/* Catch-all Fallback */}
+      {/* Catch-all redirect to / */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

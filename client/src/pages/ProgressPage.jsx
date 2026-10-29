@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   BarChart3,
   CheckCircle,
-  Dumbbell,
-  Clock,
   Flame,
-  BrainCircuit
+  Calendar,
+  Layers
 } from 'lucide-react';
-import { StudyTrendChart } from '../components/analytics/StudyTrendChart';
 import { CategoryBreakdownChart } from '../components/analytics/CategoryBreakdownChart';
 import { ProductivityHeatmap } from '../components/analytics/ProductivityHeatmap';
 import { analyticsApi } from '../api/analyticsApi';
@@ -25,7 +23,7 @@ export const ProgressPage = () => {
         setData(res.data);
       }
     } catch (err) {
-      console.error('Failed to load analytics:', err);
+      console.error('Failed to load progress data:', err);
     } finally {
       setLoading(false);
     }
@@ -36,19 +34,18 @@ export const ProgressPage = () => {
   }, [daysRange]);
 
   const summary = data?.summary || {};
-  const last7DaysTrend = data?.dayWiseTrend?.slice(-7) || [];
 
   return (
-    <div className="space-y-4 animate-fade-in max-w-4xl mx-auto">
+    <div className="space-y-4 animate-fade-in max-w-2xl mx-auto">
       {/* Header and Range Filter */}
       <div className="flex items-center justify-between gap-2">
         <div>
           <h1 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
             <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <span>Growth & Analytics</span>
+            <span>Progress & History</span>
           </h1>
           <p className="text-[11px] text-slate-400">
-            Honest metrics on tasks, study hours, and habits
+            Track your consistency and completed tasks over time
           </p>
         </div>
 
@@ -74,69 +71,50 @@ export const ProgressPage = () => {
         </div>
       </div>
 
-      {/* Lean Mobile Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            <span>Completed</span>
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+      {/* Metric Summary Cards */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 text-center">
+          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            Completed
           </div>
-          <div className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
+          <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+            {summary.totalCompletedCount || 0}
+          </div>
+          <div className="text-[10px] text-slate-400">
+            Tasks done
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 text-center">
+          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            Consistency
+          </div>
+          <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-0.5">
             {summary.overallCompletionRate || 0}%
           </div>
           <div className="text-[10px] text-slate-400">
-            {summary.totalCompletedCount || 0} tasks done
+            Completion rate
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            <span>Study Hours</span>
-            <BrainCircuit className="w-3.5 h-3.5 text-blue-500" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 text-center">
+          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            Habits
           </div>
-          <div className="text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">
-            {summary.totalStudyHours || 0}h
-          </div>
-          <div className="text-[10px] text-slate-400">
-            Recorded focus
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            <span>Gym / Fitness</span>
-            <Dumbbell className="w-3.5 h-3.5 text-emerald-500" />
-          </div>
-          <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
-            {summary.fitnessSessionsCount || 0}
-          </div>
-          <div className="text-[10px] text-slate-400">
-            Workouts logged
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            <span>Active Habits</span>
-            <Flame className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-          </div>
-          <div className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
+          <div className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">
             {summary.activeHabitsCount || 0}
           </div>
           <div className="text-[10px] text-slate-400">
-            Discipline drivers
+            Active streaks
           </div>
         </div>
       </div>
 
-      {/* Heatmap */}
+      {/* Consistency Heatmap */}
       <ProductivityHeatmap dayWiseTrend={data?.dayWiseTrend || []} />
 
-      {/* Charts */}
-      <div className="space-y-4">
-        <StudyTrendChart trendData={last7DaysTrend} />
-        <CategoryBreakdownChart categoryBreakdown={data?.categoryBreakdown || []} />
-      </div>
+      {/* Category Breakdown */}
+      <CategoryBreakdownChart categoryBreakdown={data?.categoryBreakdown || []} />
     </div>
   );
 };
