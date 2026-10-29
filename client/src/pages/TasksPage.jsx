@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, CheckCircle2 } from 'lucide-react';
 import { TaskCard } from '../components/tasks/TaskCard';
 import { taskApi } from '../api/taskApi';
@@ -11,6 +11,7 @@ export const TasksPage = () => {
   const [loading, setLoading] = useState(true);
   const [quickTitle, setQuickTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const inputRef = useRef(null);
 
   const { isOnline, queueAction } = useSync();
   const todayStr = getTodayString();
@@ -44,7 +45,10 @@ export const TasksPage = () => {
 
   const handleInlineAddTask = async (e) => {
     e.preventDefault();
-    if (!quickTitle.trim()) return;
+    if (!quickTitle.trim()) {
+      inputRef.current?.focus();
+      return;
+    }
 
     setIsAdding(true);
     const taskData = {
@@ -60,6 +64,7 @@ export const TasksPage = () => {
       }
       setQuickTitle('');
       fetchTasks();
+      inputRef.current?.focus();
     } catch (err) {
       console.error('Error adding task:', err);
     } finally {
@@ -106,7 +111,7 @@ export const TasksPage = () => {
 
   return (
     <div className="space-y-4 animate-fade-in max-w-xl mx-auto">
-      {/* 1. Only Today & Tomorrow Switcher */}
+      {/* 1. Today & Tomorrow Switcher */}
       <div className="grid grid-cols-2 p-1 bg-slate-200/70 dark:bg-slate-800/80 rounded-2xl">
         <button
           type="button"
@@ -132,9 +137,11 @@ export const TasksPage = () => {
         </button>
       </div>
 
-      {/* 2. Fast Inline Task Input */}
+      {/* 2. Fast Inline Task Input - Never Disabled */}
       <form onSubmit={handleInlineAddTask} className="flex items-center gap-2">
         <input
+          ref={inputRef}
+          id="task-input"
           type="text"
           value={quickTitle}
           onChange={(e) => setQuickTitle(e.target.value)}
@@ -143,11 +150,11 @@ export const TasksPage = () => {
         />
         <button
           type="submit"
-          disabled={isAdding || !quickTitle.trim()}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold active:scale-95 transition-all shadow-xs flex items-center gap-1"
+          disabled={isAdding}
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold active:scale-95 transition-all shadow-xs flex items-center gap-1 cursor-pointer"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>Add</span>
+          <span>{isAdding ? 'Adding...' : 'Add'}</span>
         </button>
       </form>
 

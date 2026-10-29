@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, Calendar } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { getTodayString, getTomorrowString } from '../../utils/dateUtils';
 
 export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated }) => {
@@ -21,7 +21,10 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim()) {
+      inputRef.current?.focus();
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -101,14 +104,14 @@ export const TaskQuickAddModal = ({ isOpen, onClose, onTaskCreated }) => {
             </button>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Button - Never Disabled */}
           <button
             type="submit"
-            disabled={isSubmitting || !title.trim()}
-            className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold active:scale-98 transition-all shadow-xs flex items-center justify-center gap-1.5"
+            disabled={isSubmitting}
+            className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold active:scale-98 transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Add Task</span>
+            <span>{isSubmitting ? 'Adding...' : 'Add Task'}</span>
           </button>
         </form>
       </div>

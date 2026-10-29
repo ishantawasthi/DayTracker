@@ -54,8 +54,15 @@ export const Header = ({ onQuickAdd }) => {
           </button>
 
           <button
-            onClick={onQuickAdd}
-            className="hidden sm:inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs active:scale-95 transition-all"
+            onClick={() => {
+              const inlineInput = document.getElementById('task-input');
+              if (inlineInput) {
+                inlineInput.focus();
+              } else if (onQuickAdd) {
+                onQuickAdd();
+              }
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs active:scale-95 transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Add Task</span>
