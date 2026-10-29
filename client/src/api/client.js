@@ -1,7 +1,22 @@
 import axios from 'axios';
 
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // When running on Render or same host, use relative /api
+  if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
+    return '/api';
+  }
+  // If deployed to external host (Vercel, Netlify, etc.) without an env variable, connect to the live Render backend
+  if (typeof window !== 'undefined' && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    return 'https://daytracker-s042.onrender.com/api';
+  }
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json'
   }
@@ -24,7 +39,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token if expired or unauthorized
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
         localStorage.removeItem('daytrack_token');
         localStorage.removeItem('daytrack_user');
