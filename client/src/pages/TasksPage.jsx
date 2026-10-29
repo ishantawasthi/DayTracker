@@ -1,55 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  RotateCcw,
-  Search,
-  Filter
-} from 'lucide-react';
+import { Plus, CheckCircle2 } from 'lucide-react';
 import { TaskCard } from '../components/tasks/TaskCard';
 import { taskApi } from '../api/taskApi';
-import { getTodayString, getTomorrowString, shiftDate, formatDisplayDate } from '../utils/dateUtils';
+import { getTodayString, getTomorrowString } from '../utils/dateUtils';
 import { useSync } from '../context/SyncContext';
 
 export const TasksPage = () => {
-  const { categories, onOpenQuickAdd } = useOutletContext();
-  const [currentDate, setCurrentDate] = useState(getTodayString());
-  const [viewMode, setViewMode] = useState('daily'); // 'daily' | 'all'
+  const [activeTab, setActiveTab] = useState('today'); // 'today' | 'tomorrow'
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState('all'); // 'all' | 'pending' | 'completed'
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-
-  // Quick inline add state
   const [quickTitle, setQuickTitle] = useState('');
-  const [quickCategory, setQuickCategory] = useState('');
-  const [quickPriority, setQuickPriority] = useState('medium');
   const [isAdding, setIsAdding] = useState(false);
 
   const { isOnline, queueAction } = useSync();
-
   const todayStr = getTodayString();
   const tomorrowStr = getTomorrowString();
+
+  const activeDate = activeTab === 'tomorrow' ? tomorrowStr : todayStr;
 
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (viewMode === 'daily') {
-        params.date = currentDate;
-      } else {
-        params.range = 'all';
-      }
-      if (selectedCategory) params.category = selectedCategory;
-      if (searchQuery) params.search = searchQuery;
-
-      const res = await taskApi.getTasks(params);
+      const res = await taskApi.getTasks({ date: activeDate });
       if (res.success) {
         setTasks(res.data);
       }
@@ -62,25 +34,22 @@ export const TasksPage = () => {
 
   useEffect(() => {
     fetchTasks();
-  }, [currentDate, viewMode, selectedCategory, searchQuery]);
+  }, [activeTab]);
 
   useEffect(() => {
     const handleUpdate = () => fetchTasks();
     window.addEventListener('daytrack:task-updated', handleUpdate);
     return () => window.removeEventListener('daytrack:task-updated', handleUpdate);
-  }, [currentDate, viewMode]);
+  }, [activeTab]);
 
   const handleInlineAddTask = async (e) => {
     e.preventDefault();
     if (!quickTitle.trim()) return;
 
     setIsAdding(true);
-    const targetDate = viewMode === 'daily' ? currentDate : todayStr;
     const taskData = {
       title: quickTitle.trim(),
-      scheduledDate: targetDate,
-      category: quickCategory || (categories[0] ? categories[0]._id : undefined),
-      priority: quickPriority
+      scheduledDate: activeDate
     };
 
     try {
@@ -131,295 +100,87 @@ export const TasksPage = () => {
     }
   };
 
-  const handlePrevDay = () => {
-    setViewMode('daily');
-    setCurrentDate((prev) => shiftDate(prev, -1));
-  };
-
-  const handleNextDay = () => {
-    setViewMode('daily');
-    setCurrentDate((prev) => shiftDate(prev, 1));
-  };
-
-  const handleSetToday = () => {
-    setViewMode('daily');
-    setCurrentDate(todayStr);
-  };
-
-  const handleSetTomorrow = () => {
-    setViewMode('daily');
-    setCurrentDate(tomorrowStr);
-  };
-
-  const handleSetAllHistory = () => {
-    setViewMode('all');
-  };
-
-  const completedTasks = tasks.filter((t) => t.status === 'completed');
-  const pendingTasks = tasks.filter((t) => t.status === 'pending');
   const totalCount = tasks.length;
-  const completedCount = completedTasks.length;
-  const completionPercentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
-
-  const displayedTasks =
-    filterStatus === 'pending'
-      ? pendingTasks
-      : filterStatus === 'completed'
-      ? completedTasks
-      : tasks;
-
-  // Group tasks by date when viewing "All Tasks (History)"
-  const groupedTasks = {};
-  if (viewMode === 'all') {
-    displayedTasks.forEach((t) => {
-      const d = t.scheduledDate || 'Unscheduled';
-      if (!groupedTasks[d]) groupedTasks[d] = [];
-      groupedTasks[d].push(t);
-    });
-  }
+  const completedCount = tasks.filter((t) => t.status === 'completed').length;
+  const percentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
 
   return (
-    <div className="space-y-3.5 animate-fade-in max-w-2xl mx-auto">
-      {/* 1. Date Navigation Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 shadow-2xs">
-        <div className="flex items-center justify-between gap-2">
-          {/* Previous day arrow */}
-          <button
-            onClick={handlePrevDay}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            title="Previous Day"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          {/* Current Date Display */}
-          <div className="text-center flex-1">
-            <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center justify-center gap-1.5">
-              <span>{viewMode === 'all' ? 'All Tasks History' : formatDisplayDate(currentDate)}</span>
-              {viewMode === 'daily' && currentDate === todayStr && (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              )}
-            </div>
-            {viewMode === 'daily' && (
-              <span className="text-[10px] text-slate-400 font-medium">
-                {currentDate}
-              </span>
-            )}
-          </div>
-
-          {/* Next day arrow */}
-          <button
-            onClick={handleNextDay}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            title="Next Day"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Quick Date Pills: Today, Tomorrow, All History, Date Picker */}
-        <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <button
-            onClick={handleSetToday}
-            className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-all ${
-              viewMode === 'daily' && currentDate === todayStr
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-            }`}
-          >
-            Today
-          </button>
-          <button
-            onClick={handleSetTomorrow}
-            className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-all ${
-              viewMode === 'daily' && currentDate === tomorrowStr
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-            }`}
-          >
-            Tomorrow
-          </button>
-          <button
-            onClick={handleSetAllHistory}
-            className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-all ${
-              viewMode === 'all'
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-            }`}
-          >
-            All History
-          </button>
-
-          {/* Date Picker Input */}
-          <div className="relative">
-            <input
-              type="date"
-              value={currentDate}
-              onChange={(e) => {
-                if (e.target.value) {
-                  setViewMode('daily');
-                  setCurrentDate(e.target.value);
-                }
-              }}
-              className="w-8 h-7 opacity-0 absolute inset-0 cursor-pointer"
-              title="Pick specific date"
-            />
-            <div className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 pointer-events-none">
-              <Calendar className="w-3.5 h-3.5" />
-            </div>
-          </div>
-        </div>
+    <div className="space-y-4 animate-fade-in max-w-xl mx-auto">
+      {/* 1. Only Today & Tomorrow Switcher */}
+      <div className="grid grid-cols-2 p-1 bg-slate-200/70 dark:bg-slate-800/80 rounded-2xl">
+        <button
+          type="button"
+          onClick={() => setActiveTab('today')}
+          className={`py-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === 'today'
+              ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+          }`}
+        >
+          Today
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('tomorrow')}
+          className={`py-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === 'tomorrow'
+              ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+          }`}
+        >
+          Tomorrow
+        </button>
       </div>
 
-      {/* 2. Fast Inline Task Creator */}
-      <form
-        onSubmit={handleInlineAddTask}
-        className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 shadow-2xs space-y-2"
-      >
-        <div className="flex items-center gap-1.5">
-          <input
-            type="text"
-            value={quickTitle}
-            onChange={(e) => setQuickTitle(e.target.value)}
-            placeholder={
-              viewMode === 'daily' && currentDate === todayStr
-                ? 'Add task for Today...'
-                : viewMode === 'daily' && currentDate === tomorrowStr
-                ? 'Add task for Tomorrow...'
-                : 'Add a new task...'
-            }
-            className="flex-1 text-xs px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
-          />
-          <button
-            type="submit"
-            disabled={isAdding || !quickTitle.trim()}
-            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold flex items-center gap-1 active:scale-95 transition-all shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Add</span>
-          </button>
-        </div>
-
-        {/* Category & Priority selectors */}
-        <div className="flex items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1">
-            <select
-              value={quickCategory}
-              onChange={(e) => setQuickCategory(e.target.value)}
-              className="text-[11px] px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none"
-            >
-              <option value="">Category: Default</option>
-              {categories.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={quickPriority}
-              onChange={(e) => setQuickPriority(e.target.value)}
-              className="text-[11px] px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none"
-            >
-              <option value="low">Priority: Low</option>
-              <option value="medium">Priority: Medium</option>
-              <option value="high">Priority: High</option>
-            </select>
-          </div>
-        </div>
+      {/* 2. Fast Inline Task Input */}
+      <form onSubmit={handleInlineAddTask} className="flex items-center gap-2">
+        <input
+          type="text"
+          value={quickTitle}
+          onChange={(e) => setQuickTitle(e.target.value)}
+          placeholder={activeTab === 'today' ? 'Add task for today...' : 'Add task for tomorrow...'}
+          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs"
+        />
+        <button
+          type="submit"
+          disabled={isAdding || !quickTitle.trim()}
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold active:scale-95 transition-all shadow-xs flex items-center gap-1"
+        >
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Add</span>
+        </button>
       </form>
 
-      {/* 3. Daily Completion Bar & Filters */}
-      <div className="flex items-center justify-between text-xs px-1">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-slate-800 dark:text-slate-200">
-            {completedCount} of {totalCount} done
-          </span>
-          {totalCount > 0 && (
-            <span className="text-[10px] text-slate-400 font-semibold">
-              ({completionPercentage}%)
-            </span>
-          )}
-        </div>
-
-        {/* Status Filter Chips: All, To Do, Done */}
-        <div className="flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px]">
-          {[
-            { id: 'all', label: `All (${totalCount})` },
-            { id: 'pending', label: `To Do (${pendingTasks.length})` },
-            { id: 'completed', label: `Done (${completedTasks.length})` }
-          ].map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setFilterStatus(s.id)}
-              className={`px-2 py-0.5 rounded-md transition-all ${
-                filterStatus === s.id
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-2xs'
-                  : 'text-slate-500 dark:text-slate-400'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Progress Line */}
+      {/* 3. Simple Counter / Progress (if tasks exist) */}
       {totalCount > 0 && (
-        <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-300"
-            style={{ width: `${completionPercentage}%` }}
-          />
+        <div className="flex items-center justify-between text-xs px-1 text-slate-500 dark:text-slate-400">
+          <span className="font-semibold">
+            {completedCount} of {totalCount} completed
+          </span>
+          <span className="font-bold text-slate-700 dark:text-slate-300">
+            {percentage}%
+          </span>
         </div>
       )}
 
       {/* 4. Task List */}
       {loading ? (
-        <div className="text-center py-10 text-xs text-slate-400">Loading saved tasks...</div>
-      ) : displayedTasks.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 text-center space-y-1">
-          <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto opacity-70 mb-1" />
-          <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-            {viewMode === 'all'
-              ? 'No tasks found in your history.'
-              : totalCount === 0
-              ? `No tasks scheduled for ${formatDisplayDate(currentDate)}.`
-              : 'No tasks match your filter.'}
+        <div className="text-center py-10 text-xs text-slate-400">Loading tasks...</div>
+      ) : tasks.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-8 text-center space-y-1.5">
+          <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto opacity-60 mb-2" />
+          <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            {activeTab === 'today' ? 'No tasks for today' : 'No tasks for tomorrow'}
           </p>
-          <p className="text-[11px] text-slate-400">
-            Type in the box above to add a task that saves permanently.
+          <p className="text-xs text-slate-400">
+            {activeTab === 'today'
+              ? 'Type a task above to plan your day.'
+              : 'Add upcoming tasks to plan ahead.'}
           </p>
-        </div>
-      ) : viewMode === 'all' ? (
-        /* History Grouped by Date */
-        <div className="space-y-4">
-          {Object.keys(groupedTasks)
-            .sort((a, b) => (b > a ? 1 : -1))
-            .map((dateKey) => (
-              <div key={dateKey} className="space-y-1.5">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1 flex items-center justify-between">
-                  <span>{formatDisplayDate(dateKey)} ({dateKey})</span>
-                  <span>{groupedTasks[dateKey].length} tasks</span>
-                </div>
-                <div className="space-y-1.5">
-                  {groupedTasks[dateKey].map((task) => (
-                    <TaskCard
-                      key={task._id}
-                      task={task}
-                      onToggle={handleToggle}
-                      onReschedule={handleReschedule}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
         </div>
       ) : (
-        /* Daily View */
         <div className="space-y-2">
-          {displayedTasks.map((task) => (
+          {tasks.map((task) => (
             <TaskCard
               key={task._id}
               task={task}

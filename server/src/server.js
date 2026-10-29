@@ -61,6 +61,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+
 // Serve frontend client dist if present (for single-service deployment)
 if (clientDistPath) {
   app.use(express.static(clientDistPath));

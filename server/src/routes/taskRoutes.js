@@ -123,7 +123,15 @@ router.post('/', async (req, res) => {
     // Ensure category exists or default to first category for user
     let catId = category;
     if (!catId) {
-      const defaultCat = await Category.findOne({ user: req.user._id });
+      let defaultCat = await Category.findOne({ user: req.user._id });
+      if (!defaultCat) {
+        defaultCat = await Category.create({
+          user: req.user._id,
+          name: 'General',
+          color: '#6366f1',
+          icon: 'CheckSquare'
+        });
+      }
       catId = defaultCat ? defaultCat._id : null;
     }
 
