@@ -52,14 +52,11 @@ export const TaskCard = ({
       }`}
     >
       {/* Checkbox + Title */}
-      <div
-        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none"
-        onClick={handleToggleClick}
-      >
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <button
           type="button"
           onClick={handleToggleClick}
-          className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+          className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
             isCompleted
               ? 'bg-emerald-500 border-emerald-500 text-white'
               : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-400 bg-white dark:bg-slate-800'
@@ -70,7 +67,7 @@ export const TaskCard = ({
         </button>
 
         <span
-          className={`text-sm font-medium leading-tight truncate ${
+          className={`text-sm font-medium leading-tight truncate select-text ${
             isCompleted
               ? 'line-through text-slate-400 dark:text-slate-500'
               : 'text-slate-800 dark:text-slate-100'

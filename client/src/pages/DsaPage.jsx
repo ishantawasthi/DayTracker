@@ -408,17 +408,11 @@ export const DsaPage = () => {
                           }`}
                         >
                           {/* Left: Checkbox + Title + Pattern (Visible on mobile) */}
-                          <div
-                            className="flex items-start gap-2.5 flex-1 min-w-0 cursor-pointer select-none"
-                            onClick={() => handleToggle(q._id)}
-                          >
+                          <div className="flex items-start gap-2.5 flex-1 min-w-0">
                             <button
                               type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleToggle(q._id);
-                              }}
-                              className={`flex-shrink-0 w-4.5 h-4.5 mt-0.5 rounded border flex items-center justify-center transition-all ${
+                              onClick={() => handleToggle(q._id)}
+                              className={`flex-shrink-0 w-4.5 h-4.5 mt-0.5 rounded border flex items-center justify-center transition-all cursor-pointer ${
                                 isDone
                                   ? 'bg-emerald-500 border-emerald-500 text-white shadow-2xs'
                                   : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-400 bg-white dark:bg-slate-800'
