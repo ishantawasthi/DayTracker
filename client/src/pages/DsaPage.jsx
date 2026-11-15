@@ -310,7 +310,7 @@ export const DsaPage = () => {
 
           {/* Expand / Collapse All control */}
           <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100/80 dark:border-slate-800/80 text-slate-500 dark:text-slate-400">
-            <span>{allTopics.length} Topics • 200 Questions</span>
+            <span>{allTopics.length} Topics • {totalCount} Questions</span>
             <div className="flex items-center gap-2 font-medium">
               <button
                 onClick={handleExpandAll}
