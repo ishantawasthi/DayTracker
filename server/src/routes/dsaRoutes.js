@@ -6,12 +6,15 @@ import { STRIVER_QUESTIONS } from '../data/striverQuestions.js';
 
 const router = express.Router();
 
-// Auto-seed built-in Striver questions if not already seeded with exact 200 list
+// Auto-seed built-in Striver questions if not already seeded with exact 200 list and Striver links
 export const seedDefaultQuestions = async () => {
   try {
+    const sample = await DsaQuestion.findOne({ isCustom: false });
+    const needsUpdate = !sample || !sample.problemUrl || !sample.problemUrl.includes('takeuforward.org');
     const count = await DsaQuestion.countDocuments({ isCustom: false });
-    if (count !== 200) {
-      console.log(`[DayTrack] Updating DSA Sheet to exact 200 Striver A2Z questions (current: ${count})...`);
+
+    if (count !== 200 || needsUpdate) {
+      console.log(`[DayTrack] Updating DSA Sheet to exact 200 Striver A2Z questions with Striver links (current: ${count})...`);
       await DsaQuestion.deleteMany({ isCustom: false });
       const docs = STRIVER_QUESTIONS.map((q) => ({
         number: q.number,
@@ -19,13 +22,13 @@ export const seedDefaultQuestions = async () => {
         topic: q.topic,
         difficulty: q.difficulty,
         pattern: q.pattern || '',
-        problemUrl: q.problemUrl || `https://leetcode.com/problemset/?search=${encodeURIComponent(q.title)}`,
+        problemUrl: `https://takeuforward.org/?s=${encodeURIComponent(q.title)}`,
         order: q.number,
         isCustom: false,
         user: null
       }));
       await DsaQuestion.insertMany(docs);
-      console.log(`[DayTrack] Successfully seeded exactly ${STRIVER_QUESTIONS.length} Striver DSA questions.`);
+      console.log(`[DayTrack] Successfully seeded exactly ${STRIVER_QUESTIONS.length} Striver DSA questions with Striver links.`);
     }
   } catch (err) {
     console.error('[DayTrack] Error seeding DSA questions:', err.message);
