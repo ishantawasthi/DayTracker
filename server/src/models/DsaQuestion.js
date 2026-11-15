@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 
 const dsaQuestionSchema = new mongoose.Schema(
   {
+    number: {
+      type: Number,
+      default: 0,
+      index: true
+    },
     title: {
       type: String,
       required: [true, 'Question title is required'],
@@ -12,6 +17,11 @@ const dsaQuestionSchema = new mongoose.Schema(
       required: true,
       trim: true,
       index: true
+    },
+    pattern: {
+      type: String,
+      default: '',
+      trim: true
     },
     difficulty: {
       type: String,
@@ -47,3 +57,4 @@ const dsaQuestionSchema = new mongoose.Schema(
 
 const DsaQuestion = mongoose.model('DsaQuestion', dsaQuestionSchema);
 export default DsaQuestion;
+

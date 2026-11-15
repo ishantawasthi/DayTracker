@@ -449,7 +449,12 @@ export const DsaPage = () => {
                               {isDone && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                             </button>
 
-                            <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                              {q.number > 0 && (
+                                <span className="text-[11px] font-mono font-bold text-slate-400 dark:text-slate-500 w-8 flex-shrink-0">
+                                  #{q.number}
+                                </span>
+                              )}
                               <span
                                 className={`text-xs sm:text-sm font-medium truncate ${
                                   isDone
@@ -459,6 +464,11 @@ export const DsaPage = () => {
                               >
                                 {q.title}
                               </span>
+                              {q.pattern && (
+                                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hidden md:inline-block border border-slate-200/50 dark:border-slate-700/50">
+                                  {q.pattern}
+                                </span>
+                              )}
                             </div>
                           </div>
 
@@ -521,3 +531,4 @@ export const DsaPage = () => {
     </div>
   );
 };
+

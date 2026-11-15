@@ -6,23 +6,26 @@ import { STRIVER_QUESTIONS } from '../data/striverQuestions.js';
 
 const router = express.Router();
 
-// Auto-seed built-in Striver questions if not already seeded
+// Auto-seed built-in Striver questions if not already seeded with exact 200 list
 export const seedDefaultQuestions = async () => {
   try {
     const count = await DsaQuestion.countDocuments({ isCustom: false });
-    if (count === 0) {
-      console.log(`[DayTrack] Seeding ${STRIVER_QUESTIONS.length} Striver A2Z DSA questions...`);
+    if (count !== 200) {
+      console.log(`[DayTrack] Updating DSA Sheet to exact 200 Striver A2Z questions (current: ${count})...`);
+      await DsaQuestion.deleteMany({ isCustom: false });
       const docs = STRIVER_QUESTIONS.map((q) => ({
+        number: q.number,
         title: q.title,
         topic: q.topic,
         difficulty: q.difficulty,
+        pattern: q.pattern || '',
         problemUrl: q.problemUrl || `https://leetcode.com/problemset/?search=${encodeURIComponent(q.title)}`,
-        order: q.order,
+        order: q.number,
         isCustom: false,
         user: null
       }));
       await DsaQuestion.insertMany(docs);
-      console.log('[DayTrack] Striver DSA Questions seeded successfully.');
+      console.log(`[DayTrack] Successfully seeded exactly ${STRIVER_QUESTIONS.length} Striver DSA questions.`);
     }
   } catch (err) {
     console.error('[DayTrack] Error seeding DSA questions:', err.message);
@@ -38,7 +41,7 @@ router.get('/', async (req, res) => {
     // 1. Fetch questions: standard global ones + user's custom questions
     const questions = await DsaQuestion.find({
       $or: [{ isCustom: false }, { user: req.user._id }]
-    }).sort({ order: 1, createdAt: 1 });
+    }).sort({ number: 1, order: 1, createdAt: 1 });
 
     // 2. Fetch user's completion progress
     let progress = await DsaProgress.findOne({ user: req.user._id });
@@ -207,3 +210,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
+
