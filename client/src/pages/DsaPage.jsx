@@ -392,11 +392,11 @@ export const DsaPage = () => {
                   <div className="divide-y divide-slate-100 dark:divide-slate-800/70 border-t border-slate-100 dark:border-slate-800">
                     {qList.map((q) => {
                       const isDone = completedIds.has(q._id);
-                      // Use Striver / TakeUforward link
-                      const striverUrl =
-                        q.problemUrl && q.problemUrl.includes('takeuforward.org')
+                      // Use direct LeetCode link
+                      const leetcodeUrl =
+                        q.problemUrl && q.problemUrl.includes('leetcode.com')
                           ? q.problemUrl
-                          : `https://takeuforward.org/?s=${encodeURIComponent(q.title)}`;
+                          : `https://leetcode.com/problemset/?search=${encodeURIComponent(q.title.replace(/[\[\(].*?[\]\)]/g, '').trim())}`;
 
                       return (
                         <div
@@ -466,15 +466,15 @@ export const DsaPage = () => {
                               {q.difficulty}
                             </span>
 
-                            {/* Striver Sheet Question Link */}
+                            {/* LeetCode Question Link */}
                             <a
-                              href={striverUrl}
+                              href={leetcodeUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title="Open on Striver Sheet (TakeUforward)"
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/50 dark:border-indigo-800/40 transition-colors"
+                              title="Solve on LeetCode"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200/50 dark:border-amber-800/40 transition-colors"
                             >
-                              <span className="hidden sm:inline">Striver</span>
+                              <span className="hidden sm:inline">LeetCode</span>
                               <ExternalLink className="w-3 h-3" />
                             </a>
 

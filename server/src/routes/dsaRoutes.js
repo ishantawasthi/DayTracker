@@ -6,29 +6,66 @@ import { STRIVER_QUESTIONS } from '../data/striverQuestions.js';
 
 const router = express.Router();
 
-// Auto-seed built-in Striver questions if not already seeded with exact updated list and Striver links
+// Auto-seed built-in Striver questions if not already seeded with exact updated list and direct LeetCode links
 export const seedDefaultQuestions = async () => {
   try {
     const sample = await DsaQuestion.findOne({ isCustom: false });
-    const needsUpdate = !sample || !sample.problemUrl || !sample.problemUrl.includes('takeuforward.org');
+    const needsUpdate = !sample || !sample.problemUrl || !sample.problemUrl.includes('leetcode.com');
     const count = await DsaQuestion.countDocuments({ isCustom: false });
 
     if (count !== STRIVER_QUESTIONS.length || needsUpdate) {
-      console.log(`[DayTrack] Updating DSA Sheet to exact ${STRIVER_QUESTIONS.length} Striver questions (current: ${count})...`);
+      console.log(`[DayTrack] Updating DSA Sheet to exact ${STRIVER_QUESTIONS.length} questions with direct LeetCode links (current: ${count})...`);
+
+      // 1. Fetch old questions to preserve user progress across reseed
+      const oldQuestions = await DsaQuestion.find({ isCustom: false });
+      const oldIdToTitle = new Map();
+      oldQuestions.forEach((q) => oldIdToTitle.set(q._id.toString(), q.title));
+
+      // 2. Fetch all progress records
+      const allProgress = await DsaProgress.find({});
+
+      // 3. Remove old default questions
       await DsaQuestion.deleteMany({ isCustom: false });
+
+      // 4. Insert updated questions with LeetCode links
       const docs = STRIVER_QUESTIONS.map((q) => ({
         number: q.number,
         title: q.title,
         topic: q.topic,
         difficulty: q.difficulty,
         pattern: q.pattern || '',
-        problemUrl: `https://takeuforward.org/?s=${encodeURIComponent(q.title)}`,
+        problemUrl: q.problemUrl || `https://leetcode.com/problemset/?search=${encodeURIComponent(q.title)}`,
         order: q.number,
         isCustom: false,
         user: null
       }));
-      await DsaQuestion.insertMany(docs);
-      console.log(`[DayTrack] Successfully seeded exactly ${STRIVER_QUESTIONS.length} Striver DSA questions.`);
+      const inserted = await DsaQuestion.insertMany(docs);
+
+      // 5. Build title -> new ID map
+      const titleToNewId = new Map();
+      inserted.forEach((q) => titleToNewId.set(q.title, q._id));
+
+      // 6. Migrate user progress to new question IDs
+      for (const prog of allProgress) {
+        if (!prog.completedQuestions || prog.completedQuestions.length === 0) continue;
+        const newCompleted = [];
+        for (const oldId of prog.completedQuestions) {
+          const title = oldIdToTitle.get(oldId.toString());
+          if (title && titleToNewId.has(title)) {
+            newCompleted.push(titleToNewId.get(title));
+          } else {
+            // Check if it was a custom question that still exists
+            const customStillExists = await DsaQuestion.exists({ _id: oldId, isCustom: true });
+            if (customStillExists) {
+              newCompleted.push(oldId);
+            }
+          }
+        }
+        prog.completedQuestions = newCompleted;
+        await prog.save();
+      }
+
+      console.log(`[DayTrack] Successfully seeded exactly ${STRIVER_QUESTIONS.length} DSA questions with LeetCode links and preserved user progress.`);
     }
   } catch (err) {
     console.error('[DayTrack] Error seeding DSA questions:', err.message);
