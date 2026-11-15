@@ -1,12 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CheckSquare, Flame, BarChart3 } from 'lucide-react';
+import { CheckSquare, Code2 } from 'lucide-react';
 
 export const MobileBottomNav = () => {
   const navItems = [
     { to: '/', label: 'Tasks', icon: CheckSquare },
-    { to: '/habits', label: 'Habits', icon: Flame },
-    { to: '/progress', label: 'Progress', icon: BarChart3 },
+    { to: '/dsa', label: 'DSA Sheet', icon: Code2 },
   ];
 
   return (

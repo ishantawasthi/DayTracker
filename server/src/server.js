@@ -13,6 +13,7 @@ import habitRoutes from './routes/habitRoutes.js';
 import studyRoutes from './routes/studyRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import dsaRoutes, { seedDefaultQuestions } from './routes/dsaRoutes.js';
 
 dotenv.config();
 
@@ -22,8 +23,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB & Seed DSA sheet
+connectDB().then(() => {
+  seedDefaultQuestions();
+});
 
 // Middleware
 app.use(cors({
@@ -40,6 +43,7 @@ app.use('/api/habits', habitRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/dsa', dsaRoutes);
 
 // Resolve client dist path across various deployment environments
 const candidatePaths = [

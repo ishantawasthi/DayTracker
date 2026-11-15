@@ -22,7 +22,7 @@ export const Header = ({ onQuickAdd }) => {
               DayTrack
             </span>
             <span className="text-[10px] text-slate-400 font-medium leading-none mt-0.5">
-              {user ? `Hi, ${user.name.split(' ')[0]}` : 'Tasks & Habits'}
+              {user ? `Hi, ${user.name.split(' ')[0]}` : 'Tasks & DSA'}
             </span>
           </div>
         </div>

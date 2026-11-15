@@ -3,8 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { TasksPage } from './pages/TasksPage';
-import { HabitsPage } from './pages/HabitsPage';
-import { ProgressPage } from './pages/ProgressPage';
+import { DsaPage } from './pages/DsaPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 
@@ -56,7 +55,7 @@ export const App = () => {
         }
       />
 
-      {/* Exactly 3 Core App Tabs: 1. Tasks  2. Habits  3. Progress */}
+      {/* Core App Tabs: 1. Tasks  2. DSA Sheet */}
       <Route
         path="/"
         element={
@@ -69,11 +68,12 @@ export const App = () => {
         <Route index element={<TasksPage />} />
         <Route path="tasks" element={<Navigate to="/" replace />} />
 
-        {/* Tab 2: Habits */}
-        <Route path="habits" element={<HabitsPage />} />
+        {/* Tab 2: DSA Sheet */}
+        <Route path="dsa" element={<DsaPage />} />
 
-        {/* Tab 3: Progress & History */}
-        <Route path="progress" element={<ProgressPage />} />
+        {/* Legacy redirects */}
+        <Route path="habits" element={<Navigate to="/dsa" replace />} />
+        <Route path="progress" element={<Navigate to="/dsa" replace />} />
       </Route>
 
       {/* Catch-all redirect to / */}
